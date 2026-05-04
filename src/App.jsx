@@ -170,28 +170,9 @@ OUTPUT SCHEMA (return exactly this shape):
 
 Omit domain_specifics entirely if not applicable. Return raw JSON only.`;
 
-const COMPOSER_SYSTEM = `You are an art director composing image generation prompts. You will receive a brand_profile JSON and a subject brief. The prompt will be used alongside a reference image of the car — the reference image already carries the spatial composition, framing, and camera angle. Your job is to supply the painterly context: light, surface, environment, atmosphere, and register.
+const COMPOSER_SYSTEM = `You are an art director composing image generation prompts. You will receive a brand_profile JSON and a subject brief. The prompt will be used alongside a reference image of the car in Midjourney — the reference image already carries the spatial composition, framing, and camera angle. Your job is to supply the painterly context: light, surface, environment, atmosphere, and register.
 
-Generate THREE prompts — one for each platform — using the same brand anchors and brief. Return them in this exact format (use these exact headers):
-
-### NANO BANANA 2
-> [prompt]
-
-### NANO BANANA PRO
-> [prompt]
-
-### MIDJOURNEY v8.1
-> [prompt]
-
-Then 2–3 sentences explaining which profile anchors drove the look and any brief-vs-profile conflicts you resolved.
-
-PLATFORM-SPECIFIC CONVENTIONS:
-
-NANO BANANA 2 — 25–40 words, 2 sentences maximum. Structure: sentence 1 = car identity + surface/paint behaviour. Sentence 2 = setting + light. Maximum 5 adjectives total across the entire prompt. Direct and concrete — no poetic flourishes. Example structure: "[Car], [paint description], [setting], [light description]."
-
-NANO BANANA PRO — 35–55 words, 2–3 sentences. Same core content as NB2 but with more lighting and material texture specificity. Pro handles more detailed instructions so unpack paint physics, light quality, and surface interactions more fully than NB2. Still direct prose, no flowery language.
-
-MIDJOURNEY v8.1 — 80–140 words. Full environmental prose with colours applied to every surface (car, ground, vegetation, sky). Rich atmospheric and material description. No em-dashes or en-dashes (use commas or full stops). No Latin species names. No --no block. End with: "Add your --ar, --style raw and version flags as needed."
+Combine the profile and brief into a single Midjourney v8.1 prompt. Return the prompt as a blockquote (each line prefixed with "> "), then 2–3 sentences explaining which profile anchors drove the look and any brief-vs-profile conflicts you resolved.
 
 PROCESS:
 1. Resolve brief against profile — brief specifications win, profile fills gaps. If the brief contradicts a profile prohibition, surface the conflict explicitly. Do not silently break the brand.
@@ -203,7 +184,9 @@ PROCESS:
    d. Use temperature_anchor and saturation_anchor to set the overall tonal register of the image description: "cool-cast muted tones throughout" or "warm amber-biased palette, restrained saturation" — one phrase that ties all the surface colours together.
 4. Build environment using the profile's permitted_setting_types and region_signature. Pick vegetation, materials, weather from profile anchors. The environment description should carry the palette you translated in step 3 — the colours should appear in the scene, not just be named in the abstract.
 5. Apply domain_specifics if the subject is a vehicle — paint physics and finish behaviour only. Skip entirely if not auto.
-6. Write all three prompts from the same resolved brief and palette. Apply the same anchor colours, light conditions, and environment across all three — only the verbosity and structure differ by platform. Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure unless the brief explicitly asks for them.
+6. Write the prompt as a single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment with colours applied → sky/atmosphere → mood. Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure unless the brief explicitly asks for them.
+
+LENGTH: 80–140 words. Keep it tight — the reference image carries the rest.
 
 MIDJOURNEY v8.1 CONVENTIONS — these are hard rules:
 - No em-dashes or en-dashes in the prompt body. Use commas or full stops instead.
@@ -212,7 +195,7 @@ MIDJOURNEY v8.1 CONVENTIONS — these are hard rules:
 - Single prose block, not multi-paragraph, unless explicitly asked.
 - Do not bake --ar, --style raw, or version flags into the prompt unless the user specified them. End with a plain trailing note: "Add your --ar, --style raw and version flags as needed."
 
-WHAT TO LEAVE OUT OF ALL THREE PROMPTS (unless the brief explicitly asks):
+WHAT TO LEAVE OUT (unless the brief explicitly asks):
 - Camera angle or viewpoint (three-quarter front, side profile, front-on, etc.)
 - Framing (wide shot, close-up, etc.)
 - Lens character (tele-compression, wide, macro)
@@ -478,7 +461,7 @@ export default function BrandVisionApp() {
   const [aggregating, setAggregating] = useState(false);
   const [composing, setComposing]   = useState(false);
   const [brief, setBrief]           = useState('');
-  const [composedPrompts, setComposedPrompts] = useState(null);
+  const [composedPrompt, setComposedPrompt] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [noKeyBanner, setNoKeyBanner]   = useState(false);
   const fileInputRef = useRef(null);
@@ -579,37 +562,15 @@ export default function BrandVisionApp() {
 
   // ── Compose ──────────────────────────────────
 
-  const parseComposedPrompts = (text) => {
-    const getSection = (header) => {
-      const re = new RegExp(`### ${header}[^\\n]*\\n([\\s\\S]*?)(?=\\n### |$)`);
-      const m = text.match(re);
-      if (!m) return '';
-      return m[1].split('\n')
-        .filter(l => l.trim().startsWith('>'))
-        .map(l => l.replace(/^>\s?/, ''))
-        .join('\n')
-        .trim();
-    };
-    const lines = text.split('\n');
-    const lastQuoteIdx = lines.reduce((acc, l, i) => l.trim().startsWith('>') ? i : acc, -1);
-    const explanation = lastQuoteIdx >= 0 ? lines.slice(lastQuoteIdx + 1).join('\n').trim() : '';
-    return {
-      nb2:  getSection('NANO BANANA 2'),
-      nbPro: getSection('NANO BANANA PRO'),
-      mj:   getSection('MIDJOURNEY'),
-      explanation,
-    };
-  };
-
   const composePrompt = async () => {
     if (!profile) { alert('Build or import a brand profile first.'); return; }
     if (!brief.trim()) { alert('Write a subject brief first.'); return; }
     setComposing(true);
-    setComposedPrompts(null);
+    setComposedPrompt('');
     try {
       const userMsg = `BRAND PROFILE:\n${JSON.stringify(profile, null, 2)}\n\nSUBJECT BRIEF:\n${brief.trim()}`;
       const text = await callClaude(COMPOSER_SYSTEM, userMsg);
-      setComposedPrompts(parseComposedPrompts(text));
+      setComposedPrompt(text);
     } catch (e) {
       alert('Composition failed: ' + e.message);
     } finally {
@@ -617,7 +578,11 @@ export default function BrandVisionApp() {
     }
   };
 
-  const copySection = (text) => navigator.clipboard.writeText(text);
+  const copyPrompt = () => {
+    const lines = composedPrompt.split('\n');
+    const quoted = lines.filter(l => l.trim().startsWith('>')).map(l => l.replace(/^>\s?/, '')).join('\n').trim();
+    navigator.clipboard.writeText(quoted || composedPrompt);
+  };
 
   const doneCount    = analyses.filter(a => a.status === 'done').length;
   const errorCount   = analyses.filter(a => a.status === 'error').length;
@@ -882,7 +847,7 @@ export default function BrandVisionApp() {
             <div className="mb-8">
               <h2 className="font-serif text-3xl mb-2">Generate the prompt.</h2>
               <p className="text-stone-600 max-w-xl leading-relaxed">
-                Write what you want in frame. The brand profile fills in the art direction. Outputs one prompt each for Nano Banana 2, Nano Banana Pro, and Midjourney v8.1.
+                Write what you want in frame. The brand profile fills in the art direction. Output is a Midjourney v8.1 prompt.
               </p>
             </div>
 
@@ -926,40 +891,20 @@ export default function BrandVisionApp() {
                 >
                   {composing
                     ? <><Loader2 className="w-3 h-3 inline mr-2 animate-spin" />Composing…</>
-                    : <><Sparkles className="w-3 h-3 inline mr-2" />Compose prompts</>}
+                    : <><Sparkles className="w-3 h-3 inline mr-2" />Compose prompt</>}
                 </button>
 
-                {composedPrompts && (
-                  <div className="border-t border-stone-200 pt-6 space-y-4">
-                    {[
-                      { key: 'nb2',  label: 'Nano Banana 2',  hint: '25–40 words' },
-                      { key: 'nbPro', label: 'Nano Banana Pro', hint: '35–55 words' },
-                      { key: 'mj',   label: 'Midjourney v8.1', hint: '80–140 words' },
-                    ].map(({ key, label, hint }) => (
-                      <div key={key} className="border border-stone-200 bg-white">
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100">
-                          <div className="flex items-baseline gap-3">
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-stone-900 font-medium">{label}</span>
-                            <span className="text-[10px] text-stone-400">{hint}</span>
-                          </div>
-                          <button
-                            onClick={() => copySection(composedPrompts[key])}
-                            className="text-[10px] uppercase tracking-[0.15em] px-2.5 py-1 border border-stone-200 hover:bg-stone-900 hover:text-stone-50 hover:border-stone-900 transition"
-                          >
-                            <Copy className="w-3 h-3 inline mr-1" />Copy
-                          </button>
-                        </div>
-                        <div className="font-serif text-base leading-relaxed text-stone-800 p-5 whitespace-pre-wrap">
-                          {composedPrompts[key] || <span className="text-stone-400 italic text-sm">Not generated</span>}
-                        </div>
-                      </div>
-                    ))}
-
-                    {composedPrompts.explanation && (
-                      <div className="text-xs text-stone-500 leading-relaxed pt-2">
-                        {composedPrompts.explanation}
-                      </div>
-                    )}
+                {composedPrompt && (
+                  <div className="border-t border-stone-200 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Output</div>
+                      <button onClick={copyPrompt} className="text-[10px] uppercase tracking-[0.15em] px-3 py-1.5 border border-stone-300 hover:bg-stone-900 hover:text-stone-50 hover:border-stone-900 transition">
+                        <Copy className="w-3 h-3 inline mr-1.5" />Copy prompt
+                      </button>
+                    </div>
+                    <div className="font-serif text-base leading-relaxed text-stone-800 whitespace-pre-wrap bg-white border border-stone-200 p-6">
+                      {composedPrompt}
+                    </div>
                   </div>
                 )}
               </>

@@ -206,7 +206,7 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 
 ## Stage 3: Prompt composer
 
-**What it does:** combines a `brand_profile` and a subject brief into three prompts — one each for Nano Banana 2, Nano Banana Pro, and Midjourney v8.1 — all from the same brand anchors and brief. Designed to be used alongside a reference image of the car. The reference image carries the spatial composition, framing, and camera angle — the prompt supplies the painterly context: light, surface, environment, atmosphere, and register.
+**What it does:** combines a `brand_profile` and a subject brief into a Midjourney v8.1 prompt designed to be used alongside a reference image of the car. The reference image carries the spatial composition, framing, and camera angle — the prompt supplies the painterly context: light, surface, environment, atmosphere, and register.
 
 **Process:**
 
@@ -219,10 +219,7 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
    - Use `temperature_anchor` and `saturation_anchor` to write one tonal-register phrase that ties all the surface colours together: "cool-cast muted tones throughout" or "warm amber-biased palette, restrained saturation".
 1. **Build environment** using profile's permitted setting types and region signature. Pick vegetation, materials, weather from anchors. The environment should carry the translated palette — colours appear on real surfaces, not just in the abstract.
 1. **Apply domain specifics if relevant.** Vehicle paint physics and finish behaviour only. Skip if not auto.
-1. **Write all three prompts** from the same resolved brief and palette. Apply the same anchor colours, light conditions, and environment across all three — only the verbosity and structure differ by platform. **Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure** unless the brief explicitly asks for them.
-   - **Nano Banana 2** — 25–40 words, 2 sentences max, 5 adjectives total. Sentence 1: car identity + paint. Sentence 2: setting + light.
-   - **Nano Banana Pro** — 35–55 words, 2–3 sentences. Same core but fuller lighting and paint physics detail.
-   - **Midjourney v8.1** — 80–140 words. Full environmental prose with colours on every surface.
+1. **Write the prompt.** Single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment with colours applied → sky/atmosphere → mood. **Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure** unless the brief explicitly asks for them.
 
 **Length:** 80–140 words. Keep it tight — the reference image carries the rest.
 
