@@ -172,48 +172,69 @@ Omit domain_specifics entirely if not applicable. Return raw JSON only.`;
 
 const COMPOSER_SYSTEM = `You are an art director composing image generation prompts. You will receive a brand_profile JSON and a subject brief. The prompt will be used alongside a reference image of the car in Midjourney — the reference image already carries the spatial composition, framing, and camera angle. Your job is to supply the painterly context: light, surface, environment, atmosphere, and register.
 
-Combine the profile and brief into a single Midjourney v8.1 prompt. Return the prompt as a blockquote (each line prefixed with "> "), then 2–3 sentences explaining which profile anchors drove the look and any brief-vs-profile conflicts you resolved.
+Combine the profile and brief into two outputs. Use these exact section headers:
+
+### MIDJOURNEY v8.1
+> [prose prompt]
+
+### JSON PROMPT
+\`\`\`json
+{ ... }
+\`\`\`
+
+Then 2–3 sentences explaining which profile anchors drove the look and any brief-vs-profile conflicts you resolved.
 
 PROCESS:
 1. Resolve brief against profile — brief specifications win, profile fills gaps. If the brief contradicts a profile prohibition, surface the conflict explicitly. Do not silently break the brand.
 2. Lock three primaries from profile anchors: light, palette, register. Do not use composition anchors to prescribe spatial layout.
-3. TRANSLATE THE PALETTE — this is where most prompts go wrong. Hex codes are meaningless to Midjourney; they must become descriptive colour language applied to specific surfaces. Work through the palette fields in this order:
-   a. Convert each anchor_colour hex to a named descriptor: not "#2c3e35" but "deep forest green", not "#b8a89a" but "warm greige". Be specific and evocative, not generic ("dark", "light", "grey" are not enough).
-   b. Assign the 2–3 dominant anchor colours to specific surfaces in the scene — car body, road or ground surface, vegetation or architecture, sky. Each surface gets a colour, not just the car.
-   c. If permitted_accents exist, place them as small, specific colour punches on a real object in the scene — a reflection, a light source, a material detail.
-   d. Use temperature_anchor and saturation_anchor to set the overall tonal register of the image description: "cool-cast muted tones throughout" or "warm amber-biased palette, restrained saturation" — one phrase that ties all the surface colours together.
-4. Build environment using the profile's permitted_setting_types and region_signature. Pick vegetation, materials, weather from profile anchors. The environment description should carry the palette you translated in step 3 — the colours should appear in the scene, not just be named in the abstract.
-5. Apply domain_specifics if the subject is a vehicle — paint physics and finish behaviour only. Skip entirely if not auto.
-6. Write the prompt as a single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment with colours applied → sky/atmosphere → mood. Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure unless the brief explicitly asks for them.
+3. TRANSLATE THE PALETTE — the core work. Map every anchor colour to a real surface in the scene and keep its hex value for the JSON output. Work through in this order:
+   a. Convert each anchor_colour hex to a named descriptor: not "#2c3e35" but "deep forest green". Be specific and evocative.
+   b. Assign the 2–3 dominant anchor colours to specific surfaces — car body, ground, vegetation or architecture, sky. Each surface gets a colour and a hex.
+   c. Place permitted_accents as small specific colour punches on a real object — a reflection, a light edge, a material detail.
+   d. Use temperature_anchor and saturation_anchor to set the overall tonal register.
+4. Build environment using the profile's permitted_setting_types and region_signature. Pick vegetation, materials, weather from profile anchors.
+5. Apply domain_specifics if the subject is a vehicle — paint physics and finish behaviour only. Skip if not auto.
+6. Write both outputs from the same resolved decisions. Same scene, same surfaces, same colours — different format.
 
-LENGTH: 80–140 words. Keep it tight — the reference image carries the rest.
+MIDJOURNEY v8.1 OUTPUT — prose blockquote, 80–140 words:
+- Convert hex codes to named colour descriptors. Midjourney does not parse hex.
+- Apply colours to every surface: car, ground, vegetation, sky.
+- No em-dashes or en-dashes. No Latin species names. No --no block.
+- No camera angle, framing, lens character, depth planes, or compositional structure unless the brief asks.
+- End with: "Add your --ar, --style raw and version flags as needed."
 
-MIDJOURNEY v8.1 CONVENTIONS — these are hard rules:
-- No em-dashes or en-dashes in the prompt body. Use commas or full stops instead.
-- No Latin species names in parentheses. Common name is sufficient.
-- No --no block. Not supported in v8.1. Bake prohibitions into positive language: "matt anthracite trim throughout" not "no chrome trim".
-- Single prose block, not multi-paragraph, unless explicitly asked.
-- Do not bake --ar, --style raw, or version flags into the prompt unless the user specified them. End with a plain trailing note: "Add your --ar, --style raw and version flags as needed."
-
-WHAT TO LEAVE OUT (unless the brief explicitly asks):
-- Camera angle or viewpoint (three-quarter front, side profile, front-on, etc.)
-- Framing (wide shot, close-up, etc.)
-- Lens character (tele-compression, wide, macro)
-- Subject positioning in frame (centred, left-third, etc.)
-- Compositional structure (leading line, rule of thirds, layered planes, etc.)
-- Depth plane counts
-These are carried by the reference image. Adding them fights against it.
-
-COMMON FAILURE MODES TO AVOID:
-- Absorbing the palette as vague mood ("warm tones", "cool palette") without applying specific named colours to specific surfaces. Every anchor colour should land on something real in the scene.
-- Naming hex codes in the prompt. Midjourney does not parse hex. Convert them first.
-- Applying colour only to the car and leaving the environment colourless. The ground, sky, and vegetation should all carry the palette.
-- Slipping spatial or compositional language in through the back door ("the car sits in the left third", "a road recedes into the background", "tele-compressed perspective"). If it describes framing or layout, cut it.
-- Repeating brand-name boilerplate ("premium through restraint", "cinematic through composition"). This is poetry, not instruction. Skip it.
-- Stacking every anchor from the profile into one prompt. The profile is the menu; the prompt is the order — pick one setting, one time of day, one atmospheric condition.
-- Translating profile prohibitions as --no lists. Bake them into positive descriptors.
-- Over-specifying when the profile confidence is low. Match prompt specificity to profile confidence.
-- Inventing details the profile does not license.`;
+JSON PROMPT OUTPUT — structured object with this exact shape:
+{
+  "shape": "image_prompt",
+  "subject": {
+    "description": "string — car model and colour name",
+    "finish": "metallic | matte | satin | pearl | solid-uni",
+    "colour": { "name": "string — evocative descriptor", "hex": "#hex" },
+    "paint_behaviour": "string — flake activation, flop, specular character"
+  },
+  "light": {
+    "quality": "hard | semi-hard | soft | diffuse",
+    "time_of_day": "string",
+    "temperature_k": 0,
+    "atmospheric_modifier": "string"
+  },
+  "palette": [
+    { "surface": "ground",      "description": "string", "hex": "#hex" },
+    { "surface": "vegetation",  "description": "string", "hex": "#hex" },
+    { "surface": "sky",         "description": "string", "hex": "#hex" },
+    { "surface": "accent",      "description": "string", "hex": "#hex" }
+  ],
+  "setting": {
+    "type": "string",
+    "region": "string",
+    "weather": "string"
+  },
+  "register": {
+    "tone": "string",
+    "atmosphere": "string"
+  }
+}
+Omit palette entries for surfaces not relevant to the scene. Omit domain_specifics from the JSON if not auto. Return valid JSON only inside the code fence.
 
 // ─────────────────────────────────────────────
 // localStorage key
@@ -461,7 +482,7 @@ export default function BrandVisionApp() {
   const [aggregating, setAggregating] = useState(false);
   const [composing, setComposing]   = useState(false);
   const [brief, setBrief]           = useState('');
-  const [composedPrompt, setComposedPrompt] = useState('');
+  const [composedPrompts, setComposedPrompts] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [noKeyBanner, setNoKeyBanner]   = useState(false);
   const fileInputRef = useRef(null);
@@ -562,26 +583,39 @@ export default function BrandVisionApp() {
 
   // ── Compose ──────────────────────────────────
 
+  const parseComposedPrompts = (text) => {
+    const mjSection = text.match(/### MIDJOURNEY[^\n]*\n([\s\S]*?)(?=\n### |$)/);
+    const mj = mjSection
+      ? mjSection[1].split('\n').filter(l => l.trim().startsWith('>')).map(l => l.replace(/^>\s?/, '')).join('\n').trim()
+      : '';
+
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
+    let jsonPrompt = '';
+    if (jsonMatch) {
+      try { jsonPrompt = JSON.stringify(JSON.parse(jsonMatch[1].trim()), null, 2); }
+      catch { jsonPrompt = jsonMatch[1].trim(); }
+    }
+
+    const lastFence = text.lastIndexOf('```');
+    const explanation = lastFence >= 0 ? text.slice(lastFence + 3).trim() : '';
+
+    return { mj, jsonPrompt, explanation };
+  };
+
   const composePrompt = async () => {
     if (!profile) { alert('Build or import a brand profile first.'); return; }
     if (!brief.trim()) { alert('Write a subject brief first.'); return; }
     setComposing(true);
-    setComposedPrompt('');
+    setComposedPrompts(null);
     try {
       const userMsg = `BRAND PROFILE:\n${JSON.stringify(profile, null, 2)}\n\nSUBJECT BRIEF:\n${brief.trim()}`;
       const text = await callClaude(COMPOSER_SYSTEM, userMsg);
-      setComposedPrompt(text);
+      setComposedPrompts(parseComposedPrompts(text));
     } catch (e) {
       alert('Composition failed: ' + e.message);
     } finally {
       setComposing(false);
     }
-  };
-
-  const copyPrompt = () => {
-    const lines = composedPrompt.split('\n');
-    const quoted = lines.filter(l => l.trim().startsWith('>')).map(l => l.replace(/^>\s?/, '')).join('\n').trim();
-    navigator.clipboard.writeText(quoted || composedPrompt);
   };
 
   const doneCount    = analyses.filter(a => a.status === 'done').length;
@@ -847,7 +881,7 @@ export default function BrandVisionApp() {
             <div className="mb-8">
               <h2 className="font-serif text-3xl mb-2">Generate the prompt.</h2>
               <p className="text-stone-600 max-w-xl leading-relaxed">
-                Write what you want in frame. The brand profile fills in the art direction. Output is a Midjourney v8.1 prompt.
+                Write what you want in frame. The brand profile fills in the art direction. Outputs a Midjourney v8.1 prose prompt and a hex-accurate JSON spec for LLM-based tools.
               </p>
             </div>
 
@@ -894,17 +928,49 @@ export default function BrandVisionApp() {
                     : <><Sparkles className="w-3 h-3 inline mr-2" />Compose prompt</>}
                 </button>
 
-                {composedPrompt && (
-                  <div className="border-t border-stone-200 pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Output</div>
-                      <button onClick={copyPrompt} className="text-[10px] uppercase tracking-[0.15em] px-3 py-1.5 border border-stone-300 hover:bg-stone-900 hover:text-stone-50 hover:border-stone-900 transition">
-                        <Copy className="w-3 h-3 inline mr-1.5" />Copy prompt
-                      </button>
+                {composedPrompts && (
+                  <div className="border-t border-stone-200 pt-6 space-y-4">
+
+                    {/* Midjourney prose */}
+                    <div className="border border-stone-200 bg-white">
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100">
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-stone-900 font-medium">Midjourney v8.1</span>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(composedPrompts.mj)}
+                          className="text-[10px] uppercase tracking-[0.15em] px-2.5 py-1 border border-stone-200 hover:bg-stone-900 hover:text-stone-50 hover:border-stone-900 transition"
+                        >
+                          <Copy className="w-3 h-3 inline mr-1" />Copy
+                        </button>
+                      </div>
+                      <div className="font-serif text-base leading-relaxed text-stone-800 p-5 whitespace-pre-wrap">
+                        {composedPrompts.mj || <span className="text-stone-400 italic text-sm">Not generated</span>}
+                      </div>
                     </div>
-                    <div className="font-serif text-base leading-relaxed text-stone-800 whitespace-pre-wrap bg-white border border-stone-200 p-6">
-                      {composedPrompt}
+
+                    {/* JSON prompt spec */}
+                    <div className="border border-stone-200 bg-white">
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100">
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-[10px] uppercase tracking-[0.2em] text-stone-900 font-medium">JSON Prompt</span>
+                          <span className="text-[10px] text-stone-400">Hex-accurate · for LLM-based tools</span>
+                        </div>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(composedPrompts.jsonPrompt)}
+                          className="text-[10px] uppercase tracking-[0.15em] px-2.5 py-1 border border-stone-200 hover:bg-stone-900 hover:text-stone-50 hover:border-stone-900 transition"
+                        >
+                          <Copy className="w-3 h-3 inline mr-1" />Copy
+                        </button>
+                      </div>
+                      <pre className="text-[11px] font-mono leading-relaxed text-stone-800 p-5 overflow-x-auto whitespace-pre-wrap">
+                        {composedPrompts.jsonPrompt || <span className="text-stone-400 italic">Not generated</span>}
+                      </pre>
                     </div>
+
+                    {composedPrompts.explanation && (
+                      <div className="text-xs text-stone-500 leading-relaxed pt-1">
+                        {composedPrompts.explanation}
+                      </div>
+                    )}
                   </div>
                 )}
               </>
