@@ -61,7 +61,6 @@ Two JSON shapes. Each image produces one `image_analysis`. The whole corpus aggr
     "_note": "Optional. Only include if subject is a vehicle. Strip the whole block for non-auto.",
     "vehicle_finish": "solid-uni | metallic | pearl | matte | satin | unknown",
     "vehicle_paint_behaviour": "string, observed flake activation, flop, specular character",
-    "vehicle_stance": "string",
     "vehicle_body_type": "string"
   },
   "notes": "1-2 sentences capturing anything structured fields missed"
@@ -130,8 +129,7 @@ Every attribute has an **anchor** (centre of gravity), a **range** (permitted la
   "domain_specifics": {
     "_note": "Optional. Strip for non-auto.",
     "vehicle_finish_rules": "string",
-    "paint_physics_must_render": ["e.g. 'flake-activation-on-lit-panels', 'orange-peel-texture'"],
-    "stance_rules": "string"
+    "paint_physics_must_render": ["e.g. 'flake-activation-on-lit-panels', 'orange-peel-texture'"]
   },
   "signature_motifs": [
     "2-3 short specific phrases naming what makes this brand instantly recognisable"
@@ -156,7 +154,7 @@ Every attribute has an **anchor** (centre of gravity), a **range** (permitted la
 1. **Composition.** Structural pattern, depth planes, negative space, horizon, lens character.
 1. **Setting and region.** Be specific. "Forest" is too generic; "British broadleaf woodland" or "Pacific Northwest temperate rainforest" actually constrains the model later. Read vegetation, architectural materials, signage language for cues.
 1. **Register.** Emotional tone in one or two words. Tempo. Human presence.
-1. **Domain specifics.** Only if the image contains a vehicle. Note finish, paint behaviour, stance, body type. Skip the whole block otherwise.
+1. **Domain specifics.** Only if the image contains a vehicle. Note finish, paint behaviour, and body type. Skip the whole block otherwise.
 1. **Notes.** 1–2 sentences for anything structured fields missed.
 
 **Common failure modes to avoid:**
@@ -215,8 +213,14 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 1. **Resolve brief against profile.** Brief specifications win; profile fills gaps. If brief contradicts a profile prohibition (e.g. brief says tropical beach, profile prohibits tropical), surface the conflict. Don't silently break the brand.
 1. **Lock four primaries from profile anchors:** composition, light, palette, register.
 1. **Build environment** using profile's permitted setting types and region signature. Pick vegetation, materials, weather from anchors. Three depth planes by default.
-1. **Apply domain specifics if relevant.** Vehicle paint physics, finish behaviour, stance rules. Skip if not auto.
-1. **Write the prompt.** Single block of natural prose, no headers, no bullets. Order: subject → paint/material behaviour → light → surface → environment in depth planes → sky/atmosphere → camera. End with a stabiliser line if signature motifs need reinforcement.
+1. **Choose the camera angle.** This is the pivotal decision. If the brief specifies an angle, use it. If not, select the angle that works best with the environment being built:
+   - **Three-quarter front** — suits roads or paths curving away to one side, angled facades, forecourts with visible context. Most versatile.
+   - **Side profile** — requires a clean orthogonal background: a straight road, a flat wall, open water, a long architectural plane. Fails with curved roads or angled settings.
+   - **Three-quarter rear** — suits roads receding into distance, arrival/departure scenes.
+   - **Front-on** — suits symmetrical settings: straight roads converging to a vanishing point, head-on tunnels, formal centred architecture.
+   Once the angle is chosen, every environment and composition decision downstream must be consistent with it. Never describe a curving road and place the car in side profile.
+1. **Apply domain specifics if relevant.** Vehicle paint physics and finish behaviour only. Skip if not auto.
+1. **Write the prompt.** Single block of natural prose, no headers, no bullets. Order: camera angle + subject → paint/material behaviour → light → surface → environment in depth planes → sky/atmosphere → camera. State the angle clearly near the start. End with a stabiliser line if signature motifs need reinforcement.
 
 **Length:** 100–180 words for a hero shot, 70–110 for a quick concept. Default short.
 
@@ -230,6 +234,7 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 
 **Common failure modes:**
 
+- Choosing an angle and describing a background that contradicts it — a curving forest road behind a side-profile shot, or an asymmetric setting behind a front-on car. Always sanity-check angle against background.
 - Repeating brand-name boilerplate. "Premium through restraint, cinematic through composition" is poetry, not instruction. Skip it. Signature motifs from the profile do this job better.
 - Stacking every anchor. A profile might list five permitted setting types — the prompt uses one. Profile is the menu, prompt is the order.
 - Translating prohibitions as `--no` lists. Bake into positive language.
@@ -237,7 +242,7 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 - Inventing details the profile doesn't license.
 - Making the subject the entire prompt. The subject is one element of an art-directed image.
 
-**Output:** the prompt as a single blockquote (lines prefixed `> `), then 2–3 sentences after explaining which profile anchors drove the look and any conflicts you resolved.
+**Output:** the prompt as a single blockquote (lines prefixed `> `), then 2–3 sentences after explaining which profile anchors drove the look, which angle was chosen and why, and any conflicts resolved.
 
 -----
 
