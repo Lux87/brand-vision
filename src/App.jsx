@@ -584,16 +584,26 @@ export default function BrandVisionApp() {
   // ── Compose ──────────────────────────────────
 
   const parseComposedPrompts = (text) => {
-    const mjSection = text.match(/### MIDJOURNEY[^\n]*\n([\s\S]*?)(?=\n### |$)/);
-    const mj = mjSection
-      ? mjSection[1].split('\n').filter(l => l.trim().startsWith('>')).map(l => l.replace(/^>\s?/, '')).join('\n').trim()
-      : '';
+    // MJ prose — flexible header match, fall back to all blockquote lines
+    const mjSection = text.match(/#{1,3}\s*MIDJOURNEY[^\n]*\n([\s\S]*?)(?=\n#{1,3}|$)/i);
+    const mj = (mjSection ? mjSection[1] : text)
+      .split('\n').filter(l => l.trim().startsWith('>')).map(l => l.replace(/^>\s?/, '')).join('\n').trim();
 
-    const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
+    // JSON — try code fence first, then bare object after the JSON header
     let jsonPrompt = '';
-    if (jsonMatch) {
-      try { jsonPrompt = JSON.stringify(JSON.parse(jsonMatch[1].trim()), null, 2); }
-      catch { jsonPrompt = jsonMatch[1].trim(); }
+    const fenceMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i);
+    if (fenceMatch) {
+      try { jsonPrompt = JSON.stringify(JSON.parse(fenceMatch[1].trim()), null, 2); }
+      catch { jsonPrompt = fenceMatch[1].trim(); }
+    } else {
+      const jsonSection = text.match(/#{1,3}\s*JSON[^\n]*\n([\s\S]*?)$/i);
+      if (jsonSection) {
+        const objMatch = jsonSection[1].match(/\{[\s\S]*\}/);
+        if (objMatch) {
+          try { jsonPrompt = JSON.stringify(JSON.parse(objMatch[0]), null, 2); }
+          catch { jsonPrompt = objMatch[0]; }
+        }
+      }
     }
 
     const lastFence = text.lastIndexOf('```');
