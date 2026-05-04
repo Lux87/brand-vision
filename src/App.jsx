@@ -234,7 +234,7 @@ JSON PROMPT OUTPUT — structured object with this exact shape:
     "atmosphere": "string"
   }
 }
-Omit palette entries for surfaces not relevant to the scene. Omit domain_specifics from the JSON if not auto. Return valid JSON only inside the code fence.
+Omit palette entries for surfaces not relevant to the scene. Omit domain_specifics from the JSON if not auto. Return valid JSON only inside the code fence.`;
 
 // ─────────────────────────────────────────────
 // localStorage key
@@ -280,7 +280,7 @@ const callClaude = async (systemPrompt, userMessage, imageBase64 = null, mediaTy
       }),
     });
   } catch (e) {
-    throw new Error(`Network failure — check your connection. (${e.message})`);
+    throw new Error(`Network failure - check your connection. (${e.message})`);
   }
 
   const rawText = await response.text();
