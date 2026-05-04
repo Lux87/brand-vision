@@ -206,23 +206,28 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 
 ## Stage 3: Prompt composer
 
-**What it does:** combines a `brand_profile` and a subject brief into a Midjourney v8.1 prompt.
+**What it does:** combines a `brand_profile` and a subject brief into a Midjourney v8.1 prompt designed to be used alongside a reference image of the car. The reference image carries the spatial composition, framing, and camera angle — the prompt supplies the painterly context: light, surface, environment, atmosphere, and register.
 
 **Process:**
 
-1. **Resolve brief against profile.** Brief specifications win; profile fills gaps. If brief contradicts a profile prohibition (e.g. brief says tropical beach, profile prohibits tropical), surface the conflict. Don't silently break the brand.
-1. **Lock four primaries from profile anchors:** composition, light, palette, register.
-1. **Build environment** using profile's permitted setting types and region signature. Pick vegetation, materials, weather from anchors. Three depth planes by default.
-1. **Choose the camera angle.** This is the pivotal decision. If the brief specifies an angle, use it. If not, select the angle that works best with the environment being built:
-   - **Three-quarter front** — suits roads or paths curving away to one side, angled facades, forecourts with visible context. Most versatile.
-   - **Side profile** — requires a clean orthogonal background: a straight road, a flat wall, open water, a long architectural plane. Fails with curved roads or angled settings.
-   - **Three-quarter rear** — suits roads receding into distance, arrival/departure scenes.
-   - **Front-on** — suits symmetrical settings: straight roads converging to a vanishing point, head-on tunnels, formal centred architecture.
-   Once the angle is chosen, every environment and composition decision downstream must be consistent with it. Never describe a curving road and place the car in side profile.
+1. **Resolve brief against profile.** Brief specifications win; profile fills gaps. If brief contradicts a profile prohibition, surface the conflict. Don't silently break the brand.
+1. **Lock three primaries from profile anchors:** light, palette, register. Do not use composition anchors to prescribe spatial layout — that comes from the reference image.
+1. **Build environment** using profile's permitted setting types and region signature. Pick vegetation, materials, weather from anchors.
 1. **Apply domain specifics if relevant.** Vehicle paint physics and finish behaviour only. Skip if not auto.
-1. **Write the prompt.** Single block of natural prose, no headers, no bullets. Order: camera angle + subject → paint/material behaviour → light → surface → environment in depth planes → sky/atmosphere → camera. State the angle clearly near the start. End with a stabiliser line if signature motifs need reinforcement.
+1. **Write the prompt.** Single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment → sky/atmosphere → mood. **Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure** unless the brief explicitly asks for them.
 
-**Length:** 100–180 words for a hero shot, 70–110 for a quick concept. Default short.
+**Length:** 80–140 words. Keep it tight — the reference image carries the rest.
+
+**What to leave out (unless the brief explicitly asks):**
+
+- Camera angle or viewpoint (three-quarter front, side profile, front-on, etc.)
+- Framing (wide shot, close-up, etc.)
+- Lens character (tele-compression, wide, macro)
+- Subject positioning in frame (centred, left-third, etc.)
+- Compositional structure (leading line, rule of thirds, layered planes, etc.)
+- Depth plane counts
+
+These are carried by the reference image. Adding them fights against it.
 
 **Midjourney v8.1 conventions:**
 
@@ -234,15 +239,14 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 
 **Common failure modes:**
 
-- Choosing an angle and describing a background that contradicts it — a curving forest road behind a side-profile shot, or an asymmetric setting behind a front-on car. Always sanity-check angle against background.
-- Repeating brand-name boilerplate. "Premium through restraint, cinematic through composition" is poetry, not instruction. Skip it. Signature motifs from the profile do this job better.
+- Slipping spatial language in through the back door — "the car sits in the left third", "a road recedes into the background", "tele-compressed perspective". If it describes framing or layout, cut it.
+- Repeating brand-name boilerplate. "Premium through restraint, cinematic through composition" is poetry, not instruction. Skip it.
 - Stacking every anchor. A profile might list five permitted setting types — the prompt uses one. Profile is the menu, prompt is the order.
 - Translating prohibitions as `--no` lists. Bake into positive language.
 - Over-specifying when the profile is general. Match prompt specificity to profile confidence.
 - Inventing details the profile doesn't license.
-- Making the subject the entire prompt. The subject is one element of an art-directed image.
 
-**Output:** the prompt as a single blockquote (lines prefixed `> `), then 2–3 sentences after explaining which profile anchors drove the look, which angle was chosen and why, and any conflicts resolved.
+**Output:** the prompt as a single blockquote (lines prefixed `> `), then 2–3 sentences after explaining which profile anchors drove the look and any conflicts resolved.
 
 -----
 
