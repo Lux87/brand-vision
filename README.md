@@ -4,9 +4,37 @@ A pipeline for art-direction-led prompt generation. Analyse reference images int
 
 The "tool" is Claude Code plus a few markdown files. No scripts to maintain. The model does the work, you direct it.
 
------
+---
 
-## One-time setup (≈10 minutes)
+## Web app (GitHub Pages)
+
+A static React app lives in `src/`. Each user supplies their own Anthropic API key — it is stored in browser localStorage and sent only to `api.anthropic.com`. No backend, no proxy, no server.
+
+### Deploy to GitHub Pages
+
+1. Push this repo to GitHub (must be public, or you need GitHub Pro for private Pages).
+2. In the repo **Settings → Pages**, set **Source** to **GitHub Actions**.
+3. Push to `main` — the workflow in `.github/workflows/deploy.yml` runs automatically.
+4. Site is live at `https://{username}.github.io/brand-vision/`
+5. First-time visitors paste their own Anthropic API key into the app (Settings / key icon in the header).
+
+### Local development
+
+```sh
+npm install
+npm run dev
+```
+
+No `.env` file needed — the API key is entered in the UI and stored in localStorage.
+
+```sh
+npm run build     # production build → dist/
+npm run preview   # serve the dist/ build locally
+```
+
+---
+
+## One-time CLI setup (≈10 minutes)
 
 ### 1. Install Claude Code
 
@@ -58,9 +86,9 @@ cd ~/brand-vision
 mkdir -p references analyses profiles prompts
 ```
 
------
+---
 
-## Daily use
+## Daily CLI use
 
 ### Start a session
 
@@ -111,7 +139,7 @@ To save the prompt for later:
 
 > compose a prompt for audi: … and save to prompts/audi/
 
------
+---
 
 ## Patterns worth knowing
 
@@ -135,7 +163,7 @@ Claude Code skips already-analysed images, processes only new ones, then re-aggr
 
 Just use different folder names — `references/audi/`, `references/porsche/`, etc. Each brand gets its own profile in `profiles/`.
 
------
+---
 
 ## Cost reference
 
@@ -149,7 +177,7 @@ So a full brand pipeline costs under a dollar with Sonnet. Switch to Opus if you
 
 > use opus for analysis from now on
 
------
+---
 
 ## Why this works
 
