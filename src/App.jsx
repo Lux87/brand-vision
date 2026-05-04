@@ -208,33 +208,41 @@ JSON PROMPT OUTPUT — structured object with this exact shape:
   "shape": "image_prompt",
   "subject": {
     "description": "string — car model and colour name",
+    "activity": "parked | stationary | moving | cornering | other",
     "finish": "metallic | matte | satin | pearl | solid-uni",
     "colour": { "name": "string — evocative descriptor", "hex": "#hex" },
     "paint_behaviour": "string — flake activation, flop, specular character"
   },
   "light": {
+    "direction": "string — e.g. side-left, three-quarter-front-right, ambient",
     "quality": "hard | semi-hard | soft | diffuse",
     "time_of_day": "string",
     "temperature_k": 0,
     "atmospheric_modifier": "string"
   },
   "palette": [
+    { "surface": "car_body",    "description": "string", "hex": "#hex" },
     { "surface": "ground",      "description": "string", "hex": "#hex" },
     { "surface": "vegetation",  "description": "string", "hex": "#hex" },
     { "surface": "sky",         "description": "string", "hex": "#hex" },
     { "surface": "accent",      "description": "string", "hex": "#hex" }
   ],
-  "setting": {
+  "tonal_register": "string — e.g. 'cool-cast muted tones throughout' or 'warm amber-biased palette, restrained saturation'",
+  "environment": {
     "type": "string",
     "region": "string",
+    "ground_surface": "string — e.g. 'damp tarmac', 'loose gravel', 'wet grass'",
+    "vegetation_detail": "string — e.g. 'mature oak and hornbeam canopy', 'sparse alpine scrub'",
+    "architecture_detail": "string — only if architecturally relevant, otherwise omit",
     "weather": "string"
   },
+  "scene": "string — 1-2 sentences describing the complete scene narrative: what the car is doing, where, and the overall mood",
   "register": {
     "tone": "string",
     "atmosphere": "string"
   }
 }
-Omit palette entries for surfaces not relevant to the scene. Omit domain_specifics from the JSON if not auto. Return valid JSON only inside the code fence.`;
+Omit palette entries for surfaces not present. Omit architecture_detail if the setting has none. Return valid JSON only inside the code fence.`;
 
 // ─────────────────────────────────────────────
 // localStorage key
