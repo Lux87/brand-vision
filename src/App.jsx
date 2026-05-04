@@ -475,10 +475,10 @@ export default function BrandVisionApp() {
       error: null,
       preview: URL.createObjectURL(f),
     }));
-    setAnalyses(prev => [...prev, ...newItems]);
+    // Add all items as running immediately so the UI reflects the full batch at once
+    setAnalyses(prev => [...prev, ...newItems.map(x => ({ ...x, status: 'running' }))]);
 
-    for (const item of newItems) {
-      setAnalyses(prev => prev.map(x => x.id === item.id ? { ...x, status: 'running' } : x));
+    await Promise.allSettled(newItems.map(async (item) => {
       try {
         const { base64, mediaType } = await compressImage(item.file);
         const text = await callClaude(ANALYSER_SYSTEM, 'Analyse this image.', base64, mediaType);
@@ -488,7 +488,7 @@ export default function BrandVisionApp() {
       } catch (e) {
         setAnalyses(prev => prev.map(x => x.id === item.id ? { ...x, status: 'error', error: e.message } : x));
       }
-    }
+    }));
   };
 
   const removeAnalysis = (id) => setAnalyses(prev => prev.filter(x => x.id !== id));
