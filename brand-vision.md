@@ -212,9 +212,14 @@ Be honest. Low confidence isn't failure — it's a signal to gather more referen
 
 1. **Resolve brief against profile.** Brief specifications win; profile fills gaps. If brief contradicts a profile prohibition, surface the conflict. Don't silently break the brand.
 1. **Lock three primaries from profile anchors:** light, palette, register. Do not use composition anchors to prescribe spatial layout — that comes from the reference image.
-1. **Build environment** using profile's permitted setting types and region signature. Pick vegetation, materials, weather from anchors.
+1. **Translate the palette.** Hex codes mean nothing to Midjourney — they must become descriptive colour language applied to specific surfaces. This is where most prompts lose the brand's colour identity.
+   - Convert each `anchor_colour` hex to a named descriptor: not "#2c3e35" but "deep forest green". Be specific and evocative, not generic ("dark", "grey" are not enough).
+   - Assign the 2–3 dominant anchor colours to real surfaces in the scene — car body, road or ground, vegetation or architecture, sky. Each surface gets a colour.
+   - Place `permitted_accents` as small, specific colour punches on a real object — a reflection, a light source, a material detail.
+   - Use `temperature_anchor` and `saturation_anchor` to write one tonal-register phrase that ties all the surface colours together: "cool-cast muted tones throughout" or "warm amber-biased palette, restrained saturation".
+1. **Build environment** using profile's permitted setting types and region signature. Pick vegetation, materials, weather from anchors. The environment should carry the translated palette — colours appear on real surfaces, not just in the abstract.
 1. **Apply domain specifics if relevant.** Vehicle paint physics and finish behaviour only. Skip if not auto.
-1. **Write the prompt.** Single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment → sky/atmosphere → mood. **Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure** unless the brief explicitly asks for them.
+1. **Write the prompt.** Single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment with colours applied → sky/atmosphere → mood. **Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure** unless the brief explicitly asks for them.
 
 **Length:** 80–140 words. Keep it tight — the reference image carries the rest.
 
@@ -239,6 +244,9 @@ These are carried by the reference image. Adding them fights against it.
 
 **Common failure modes:**
 
+- Absorbing the palette as vague mood ("warm tones", "cool palette") without applying specific named colours to specific surfaces. Every anchor colour should land on something real in the scene.
+- Naming hex codes in the prompt. Midjourney does not parse hex. Convert them first.
+- Applying colour only to the car and leaving the environment colourless. The ground, sky, and vegetation should all carry the palette.
 - Slipping spatial language in through the back door — "the car sits in the left third", "a road recedes into the background", "tele-compressed perspective". If it describes framing or layout, cut it.
 - Repeating brand-name boilerplate. "Premium through restraint, cinematic through composition" is poetry, not instruction. Skip it.
 - Stacking every anchor. A profile might list five permitted setting types — the prompt uses one. Profile is the menu, prompt is the order.

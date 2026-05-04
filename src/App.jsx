@@ -177,9 +177,14 @@ Combine the profile and brief into a single Midjourney v8.1 prompt. Return the p
 PROCESS:
 1. Resolve brief against profile — brief specifications win, profile fills gaps. If the brief contradicts a profile prohibition, surface the conflict explicitly. Do not silently break the brand.
 2. Lock three primaries from profile anchors: light, palette, register. Do not use composition anchors to prescribe spatial layout.
-3. Build environment using the profile's permitted_setting_types and region_signature. Pick vegetation, materials, weather from profile anchors.
-4. Apply domain_specifics if the subject is a vehicle — paint physics and finish behaviour only. Skip entirely if not auto.
-5. Write the prompt as a single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment → sky/atmosphere → mood. Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure unless the brief explicitly asks for them.
+3. TRANSLATE THE PALETTE — this is where most prompts go wrong. Hex codes are meaningless to Midjourney; they must become descriptive colour language applied to specific surfaces. Work through the palette fields in this order:
+   a. Convert each anchor_colour hex to a named descriptor: not "#2c3e35" but "deep forest green", not "#b8a89a" but "warm greige". Be specific and evocative, not generic ("dark", "light", "grey" are not enough).
+   b. Assign the 2–3 dominant anchor colours to specific surfaces in the scene — car body, road or ground surface, vegetation or architecture, sky. Each surface gets a colour, not just the car.
+   c. If permitted_accents exist, place them as small, specific colour punches on a real object in the scene — a reflection, a light source, a material detail.
+   d. Use temperature_anchor and saturation_anchor to set the overall tonal register of the image description: "cool-cast muted tones throughout" or "warm amber-biased palette, restrained saturation" — one phrase that ties all the surface colours together.
+4. Build environment using the profile's permitted_setting_types and region_signature. Pick vegetation, materials, weather from profile anchors. The environment description should carry the palette you translated in step 3 — the colours should appear in the scene, not just be named in the abstract.
+5. Apply domain_specifics if the subject is a vehicle — paint physics and finish behaviour only. Skip entirely if not auto.
+6. Write the prompt as a single block of natural prose. Order: subject identity → paint/material behaviour → light → surface the car sits on → environment with colours applied → sky/atmosphere → mood. Do not include camera angle, framing, lens character, depth planes, subject positioning, or compositional structure unless the brief explicitly asks for them.
 
 LENGTH: 80–140 words. Keep it tight — the reference image carries the rest.
 
@@ -200,6 +205,9 @@ WHAT TO LEAVE OUT (unless the brief explicitly asks):
 These are carried by the reference image. Adding them fights against it.
 
 COMMON FAILURE MODES TO AVOID:
+- Absorbing the palette as vague mood ("warm tones", "cool palette") without applying specific named colours to specific surfaces. Every anchor colour should land on something real in the scene.
+- Naming hex codes in the prompt. Midjourney does not parse hex. Convert them first.
+- Applying colour only to the car and leaving the environment colourless. The ground, sky, and vegetation should all carry the palette.
 - Slipping spatial or compositional language in through the back door ("the car sits in the left third", "a road recedes into the background", "tele-compressed perspective"). If it describes framing or layout, cut it.
 - Repeating brand-name boilerplate ("premium through restraint", "cinematic through composition"). This is poetry, not instruction. Skip it.
 - Stacking every anchor from the profile into one prompt. The profile is the menu; the prompt is the order — pick one setting, one time of day, one atmospheric condition.
